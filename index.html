@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Professional E-Book Library</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body {margin:0;font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333;}
+header {background:linear-gradient(90deg,#0d3b66,#144d77);color:white;text-align:center;padding:25px 10px;font-size:28px;font-weight:bold;box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+input[type="text"],input[type="file"]{margin:10px 0;padding:8px;width:100%;border-radius:6px;border:1px solid #ccc;}
+.section{padding:20px;border-radius:12px;margin:15px;background:#ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+h2{margin-bottom:15px;font-size:24px;color:#0d3b66;cursor:pointer;user-select:none;}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;}
+.book{background:#fff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);text-align:center;padding:10px;display:flex;flex-direction:column;justify-content:space-between;height:300px;transition:transform 0.2s,box-shadow 0.2s;}
+.book:hover{transform:translateY(-3px);box-shadow:0 6px 12px rgba(0,0,0,0.15);}
+.book img{max-width:100%;height:150px;object-fit:cover;border-radius:6px;margin-bottom:10px;}
+.book-title{font-weight:bold;margin-bottom:5px;flex-grow:1;font-size:16px;color:#144d77;}
+.book button{margin-top:5px;padding:6px 12px;border:none;border-radius:6px;cursor:pointer;background:#0d3b66;color:white;transition:background 0.3s;}
+.book button:hover{background:#144d77;}
+.stars{display:flex;justify-content:center;margin-top:5px;}
+.star{font-size:18px;cursor:pointer;color:#ccc;transition:color 0.2s;}
+.star.checked{color:gold;}
+#readerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:999;}
+#readerModal iframe{width:80%;height:80%;border:none;border-radius:12px;}
+#closeReader{position:absolute;top:20px;right:30px;background:#144d77;color:white;border:none;padding:10px 15px;font-size:16px;border-radius:8px;cursor:pointer;}
+#uploadSection{display:none;position:fixed;top:90px;right:20px;width:300px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,0.3);z-index:1000;}
+.upload-fab{position:fixed;top:20px;right:20px;background:#0d3b66;color:white;border:none;border-radius:50%;width:60px;height:60px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1000;transition:transform 0.2s,box-shadow 0.2s;}
+.upload-fab:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(0,0,0,0.4);}
+</style>
+</head>
+<body>
+
+<header>📚 Professional E-Book Library</header>
+
+<div style="text-align:center; margin:15px;">
+  <input type="text" id="searchInput" placeholder="🔍 Search books..." onkeyup="searchBooks()" style="padding:8px;width:80%;max-width:400px;border-radius:6px;border:1px solid #ccc;">
+</div>
+
+<button class="upload-fab" onclick="toggleUploadSection()">📤</button>
+
+<div id="uploadSection">
+  <h3>Upload E‑Book 📖</h3>
+  <label>PDF File:</label><br>
+  <input type="file" id="ebookFile" accept="application/pdf"><br>
+  <label>Cover Image:</label><br>
+  <input type="file" id="coverFile" accept="image/*"><br>
+  <label>Title:</label><br>
+  <input type="text" id="ebookTitle" placeholder="Enter Title"><br>
+  <button onclick="uploadBook()">Upload</button>
+</div>
+
+<div class="section mostViewed" id="mostViewedSection">
+  <h2 onclick="toggleSection('mostViewed')">🔥 Most Viewed ▼</h2>
+  <div class="book-grid" id="mostViewed"></div>
+  <button id="mostViewedShowMore" onclick="showMore('mostViewed')">Show More</button>
+</div>
+
+<div class="section topRated" id="topRatedSection">
+  <h2 onclick="toggleSection('topRated')">⭐ Top Rated ▼</h2>
+  <div class="book-grid" id="topRated"></div>
+  <button id="topRatedShowMore" onclick="showMore('topRated')">Show More</button>
+</div>
+
+<div class="section recommended" id="recommendedSection">
+  <h2 onclick="toggleSection('recommended')">💡 Recommended ▼</h2>
+  <div class="book-grid" id="recommended"></div>
+  <button id="recommendedShowMore" onclick="showMore('recommended')">Show More</button>
+</div>
+
+<div class="section recent" id="recentSection">
+  <h2 onclick="toggleSection('recent')">🆕 Recently Added ▼</h2>
+  <div class="book-grid" id="recent"></div>
+  <button id="recentShowMore" onclick="showMore('recent')">Show More</button>
+</div>
+
+<div id="readerModal">
+<button id="closeReader" onclick="closeReader()">Close ✖</button>
+<iframe id="pdfViewer"></iframe>
+</div>
+
+<script>
+const SUPABASE_URL = "https://tbtxulhykrgzktgrwqwd.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY";
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let mostViewedBooks=[], topRatedBooks=[], recommendedBooks=[], recentBooks=[];
+let displayCount={mostViewed:10,topRated:10,recommended:10,recent:10};
+
+function toggleUploadSection(){
+  const section=document.getElementById('uploadSection');
+  section.style.display = section.style.display==='none'?'block':'none';
+}
+
+function toggleSection(sectionId){
+  const section=document.getElementById(sectionId);
+  const grid=section.querySelector('.book-grid');
+  const button=document.getElementById(sectionId+'ShowMore');
+  if(grid.style.display==='none'){grid.style.display='grid';button.style.display='inline-block';}else{grid.style.display='none';button.style.display='none';}
+}
+
+async function uploadBook(){
+  const pdfFile=document.getElementById('ebookFile').files[0];
+  const coverFile=document.getElementById('coverFile').files[0];
+  const title=document.getElementById('ebookTitle').value;
+  if(!pdfFile||!coverFile||!title){alert('Select PDF, cover & title');return;}
+  // Upload PDF
+  let {data:pdfData,error:pdfError}=await supabase.storage.from('ebooks').upload('pdfs/'+pdfFile.name,pdfFile,{upsert:true});
+  if(pdfError){alert(pdfError.message);return;}
+  // Upload Cover
+  let {data:coverData,error:coverError}=await supabase.storage.from('ebooks').upload('covers/'+coverFile.name,coverFile,{upsert:true});
+  if(coverError){alert(coverError.message);return;}
+  // Get public URLs
+  const {publicUrl:pdfUrl}=supabase.storage.from('ebooks').getPublicUrl('pdfs/'+pdfFile.name);
+  const {publicUrl:coverUrl}=supabase.storage.from('ebooks').getPublicUrl('covers/'+coverFile.name);
+  // Insert into DB
+  const {data,error}=await supabase.from('books').insert([{title,pdf_url:pdfUrl,cover_url:coverUrl}]);
+  if(error){alert(error.message);return;}
+  alert('Book uploaded successfully ✅');
+  loadBooks();
+}
+
+async function loadBooks(){
+  let {data:books,error}=await supabase.from('books').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return;}
+  recentBooks=books; topRatedBooks=[...books].sort((a,b)=>b.rating-b.rating); mostViewedBooks=[...books].sort((a,b)=>b.views-b.views); recommendedBooks=books;
+  refreshDisplay();
+}
+
+function displaySection(sectionId,data){
+  const container=document.getElementById(sectionId); container.innerHTML='';
+  const booksToShow=data.slice(0,displayCount[sectionId]);
+  booksToShow.forEach((book,index)=>{
+    const div=document.createElement('div'); div.className='book';
+    div.innerHTML=`<img src="${book.cover_url}" alt="${book.title}"><div class="book-title">${book.title}</div><button onclick="readBook('${book.pdf_url}','${sectionId}','${book.id}')">Read 📖</button><div class="stars">${[1,2,3,4,5].map(i=>`<span class="star ${i<=book.rating?'checked':''}" onclick="rateBook('${book.id}',${i})">★</span>`).join('')}</div>`;
+    container.appendChild(div);
+  });
+  const button=document.getElementById(sectionId+'ShowMore');
+  button.style.display=displayCount[sectionId]>=data.length?'none':'inline-block';
+}
+
+function refreshDisplay(){
+  displaySection('mostViewed',mostViewedBooks);
+  displaySection('topRated',topRatedBooks);
+  displaySection('recommended',recommendedBooks);
+  displaySection('recent',recentBooks);
+}
+
+async function rateBook(bookId,rating){
+  await supabase.from('books').update({rating}).eq('id',bookId);
+  loadBooks();
+}
+
+async function readBook(url,sectionId,bookId){
+  const modal=document.getElementById('readerModal'); const iframe=document.getElementById('pdfViewer');
+  iframe.src=url; modal.style.display='flex';
+  await supabase.from('books').increment('views',{amount:1}).eq('id',bookId);
+  loadBooks();
+}
+
+function closeReader(){const modal=document.getElementById('readerModal');document.getElementById('pdfViewer').src=''; modal.style.display='none';}
+
+function showMore(sectionId){displayCount[sectionId]+=10;const sectionMap={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};displaySection(sectionId,sectionMap[sectionId]);}
+
+function searchBooks(){const query=document.getElementById('searchInput').value.toLowerCase(); const filterBooks=(books)=>books.filter(book=>book.title.toLowerCase().includes(query)); displaySection('mostViewed',filterBooks(mostViewedBooks)); displaySection('topRated',filterBooks(topRatedBooks)); displaySection('recommended',filterBooks(recommendedBooks)); displaySection('recent',filterBooks(recentBooks));}
+
+loadBooks();
+</script>
+</body>
+</html>
