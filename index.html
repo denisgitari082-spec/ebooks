@@ -91,7 +91,8 @@ h2 {margin-bottom:15px;font-size:24px;color:#0d3b66;cursor:pointer;user-select:n
 
 <script>
 const SUPABASE_URL = "https://tbtxulhykrgzktgrwqwd.supabase.co";
-const SUPABASE_KEY = "YOUR_ANON_KEY"; // replace with your anon key
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY
+"; // replace with your anon key
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let mostViewedBooks=[], topRatedBooks=[], recommendedBooks=[], recentBooks=[];
