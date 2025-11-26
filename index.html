@@ -4,28 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📚 Professional E-Book Library</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.27.0/dist/supabase.min.js"></script>
 <style>
 body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana,sans-serif; background:#f5f5f5; color:#333; }
-header { background: linear-gradient(90deg,#0d3b66,#144d77); color:white; text-align:center; padding:25px 10px; font-size:28px; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+header { background: linear-gradient(90deg,#0d3b66,#144d77); color:white; text-align:center; padding:25px 10px; font-size:28px; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.2); }
 input[type="text"], input[type="file"] { margin:10px 0; padding:8px; width:100%; border-radius:6px; border:1px solid #ccc; }
-.section { padding:20px; border-radius:12px; margin:15px; background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
-h2 { margin-bottom:15px; font-size:24px; color:#0d3b66; cursor:pointer; user-select:none;}
-.book-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:15px;}
-.book { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center; padding:10px; display:flex; flex-direction:column; justify-content:space-between; height:300px; transition: transform 0.2s, box-shadow 0.2s;}
-.book:hover { transform:translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.15);}
-.book img { max-width:100%; height:150px; object-fit:cover; border-radius:6px; margin-bottom:10px;}
-.book-title { font-weight:bold; margin-bottom:5px; flex-grow:1; font-size:16px; color:#144d77;}
-.book button { margin-top:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; background:#0d3b66; color:white; transition: background 0.3s;}
-.book button:hover { background:#144d77;}
-.stars { display:flex; justify-content:center; margin-top:5px;}
-.star { font-size:18px; cursor:pointer; color:#ccc; transition:color 0.2s;}
-.star.checked { color:gold;}
-#readerModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:999;}
-#readerModal iframe { width:80%; height:80%; border:none; border-radius:12px;}
-#closeReader { position:absolute; top:20px; right:30px; background:#144d77; color:white; border:none; padding:10px 15px; font-size:16px; border-radius:8px; cursor:pointer;}
-#uploadSection { display:none; position:fixed; top:90px; right:20px; width:300px; padding:20px; background:#fff; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.3); z-index:1000;}
-.upload-fab { position: fixed; top:20px; right:20px; background: #0d3b66; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s, box-shadow 0.2s;}
-.upload-fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4);}
+.section { padding:20px; border-radius:12px; margin:15px; background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+h2 { margin-bottom:15px; font-size:24px; color:#0d3b66; cursor:pointer; user-select:none; }
+.book-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:15px; }
+.book { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center; padding:10px; display:flex; flex-direction:column; justify-content:space-between; height:300px; transition: transform 0.2s, box-shadow 0.2s; }
+.book:hover { transform:translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.15); }
+.book img { max-width:100%; height:150px; object-fit:cover; border-radius:6px; margin-bottom:10px; }
+.book-title { font-weight:bold; margin-bottom:5px; flex-grow:1; font-size:16px; color:#144d77; }
+.book button { margin-top:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; background:#0d3b66; color:white; transition: background 0.3s; }
+.book button:hover { background:#144d77; }
+.stars { display:flex; justify-content:center; margin-top:5px; }
+.star { font-size:18px; cursor:pointer; color:#ccc; transition:color 0.2s; }
+.star.checked { color:gold; }
+#readerModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:999; }
+#readerModal iframe { width:80%; height:80%; border:none; border-radius:12px; }
+#closeReader { position:absolute; top:20px; right:30px; background:#144d77; color:white; border:none; padding:10px 15px; font-size:16px; border-radius:8px; cursor:pointer; }
+#uploadSection { display:none; position:fixed; top:90px; right:20px; width:300px; padding:20px; background:#fff; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.3); z-index:1000; }
+.upload-fab { position: fixed; top:20px; right:20px; background: #0d3b66; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s, box-shadow 0.2s; }
+.upload-fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
@@ -34,7 +35,7 @@ h2 { margin-bottom:15px; font-size:24px; color:#0d3b66; cursor:pointer; user-sel
 
 <!-- Search Bar -->
 <div style="text-align:center; margin:15px;">
-  <input type="text" id="searchInput" placeholder="🔍 Search books..." onkeyup="searchBooks()" style="padding:8px; width:80%; max-width:400px; border-radius:6px; border:1px solid #ccc;">
+  <input type="text" id="searchInput" placeholder="🔍 Search books by title..." onkeyup="searchBooks()" style="padding:8px; width:80%; max-width:400px; border-radius:6px; border:1px solid #ccc;">
 </div>
 
 <!-- Floating Upload Button -->
@@ -83,63 +84,69 @@ h2 { margin-bottom:15px; font-size:24px; color:#0d3b66; cursor:pointer; user-sel
 <iframe id="pdfViewer"></iframe>
 </div>
 
-<!-- Supabase Module -->
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script>
+// Initialize Supabase
+const supabaseUrl = "https://tbtxulhykrgzktgrwqwd.supabase.co";
+const supabaseAnonKey = "YeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY";
+const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-const SUPABASE_URL = "https://tbtxulhykrgzktgrwqwd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY"; // replace with your anon key
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Local arrays
 let mostViewedBooks=[], topRatedBooks=[], recommendedBooks=[], recentBooks=[];
 let displayCount={mostViewed:10,topRated:10,recommended:10,recent:10};
 
 // Toggle upload section
-window.toggleUploadSection = () => {
+function toggleUploadSection(){
   const section=document.getElementById('uploadSection');
   section.style.display = section.style.display==='none'?'block':'none';
 }
 
 // Collapsible sections
-window.toggleSection = (sectionId) => {
-  const section=document.getElementById(sectionId+'Section');
+function toggleSection(sectionId){
+  const section=document.getElementById(sectionId);
   const grid=section.querySelector('.book-grid');
   const button=document.getElementById(sectionId+'ShowMore');
   if(grid.style.display==='none'){ grid.style.display='grid'; button.style.display='inline-block'; }
   else{ grid.style.display='none'; button.style.display='none'; }
 }
 
-// Upload book
-window.uploadBook = async () => {
+// Upload book with automatic bucket creation
+async function uploadBook(){
   const pdfFile=document.getElementById('ebookFile').files[0];
   const coverFile=document.getElementById('coverFile').files[0];
   const title=document.getElementById('ebookTitle').value.trim();
   if(!pdfFile || !coverFile || !title){ alert("Please select PDF, cover & enter title"); return; }
 
-  try {
-    const pdfPath = `pdfs/${Date.now()}_${pdfFile.name}`;
-    let { error: pdfError } = await supabase.storage.from('ebooks').upload(pdfPath, pdfFile, { upsert:true });
-    if(pdfError) throw pdfError;
+  try{
+    // Create buckets if not exist
+    const buckets=await supabase.storage.listBuckets();
+    const names=buckets.data.map(b=>b.name);
+    if(!names.includes('ebooks')) await supabase.storage.createBucket('ebooks',{public:true});
+    if(!names.includes('covers')) await supabase.storage.createBucket('covers',{public:true});
 
-    const coverPath = `covers/${Date.now()}_${coverFile.name}`;
-    let { error: coverError } = await supabase.storage.from('covers').upload(coverPath, coverFile, { upsert:true });
-    if(coverError) throw coverError;
+    // Upload PDF
+    const pdfPath=`pdfs/${Date.now()}_${pdfFile.name}`;
+    let {error: pdfErr } = await supabase.storage.from('ebooks').upload(pdfPath,pdfFile,{upsert:true});
+    if(pdfErr) throw pdfErr;
 
-    const pdfUrl = supabase.storage.from('ebooks').getPublicUrl(pdfPath).publicUrl;
-    const coverUrl = supabase.storage.from('covers').getPublicUrl(coverPath).publicUrl;
+    // Upload Cover
+    const coverPath=`covers/${Date.now()}_${coverFile.name}`;
+    let {error: coverErr } = await supabase.storage.from('covers').upload(coverPath,coverFile,{upsert:true});
+    if(coverErr) throw coverErr;
 
+    // Get public URLs
+    const pdfUrl=supabase.storage.from('ebooks').getPublicUrl(pdfPath).data.publicUrl;
+    const coverUrl=supabase.storage.from('covers').getPublicUrl(coverPath).data.publicUrl;
+
+    // Add book
     const book={title,url:pdfUrl,cover:coverUrl,rating:0,views:0};
     recentBooks.unshift(book);
     sortBooks();
     refreshDisplay();
-
     alert("✅ Book uploaded successfully!");
     document.getElementById('ebookFile').value='';
     document.getElementById('coverFile').value='';
     document.getElementById('ebookTitle').value='';
 
-  } catch(err){ alert("Upload failed: "+err.message); console.error(err); }
+  }catch(err){ alert("Upload failed: "+err.message); console.error(err); }
 }
 
 // Sort sections
@@ -161,61 +168,45 @@ function displaySection(sectionId,data){
       <img src="${book.cover}" alt="${book.title}">
       <div class="book-title">${book.title}</div>
       <button onclick="readBook('${book.url}','${sectionId}',${index})">Read 📖</button>
-      <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star ${i<=book.rating?'checked':''}" onclick="rateBook('${sectionId}',${index},${i})">★</span>`).join('')}</div>
+      <div class="stars">
+        ${[1,2,3,4,5].map(i=>`<span class="star ${i<=book.rating?'checked':''}" onclick="rateBook('${sectionId}',${index},${i})">★</span>`).join('')}
+      </div>
     `;
     container.appendChild(div);
   });
   const button=document.getElementById(sectionId+'ShowMore');
-  button.style.display = displayCount[sectionId]>=data.length?'none':'inline-block';
+  button.style.display=displayCount[sectionId]>=data.length?'none':'inline-block';
 }
 
-// Refresh all
-function refreshDisplay(){
-  displaySection('mostViewed',mostViewedBooks);
-  displaySection('topRated',topRatedBooks);
-  displaySection('recommended',recommendedBooks);
-  displaySection('recent',recentBooks);
-}
+// Refresh all sections
+function refreshDisplay(){ displaySection('mostViewed',mostViewedBooks); displaySection('topRated',topRatedBooks); displaySection('recommended',recommendedBooks); displaySection('recent',recentBooks); }
 
 // Rate book
-window.rateBook = (sectionId,index,rating)=>{
+function rateBook(sectionId,index,rating){
   const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};
   map[sectionId][index].rating=rating;
-  sortBooks();
-  refreshDisplay();
+  sortBooks(); refreshDisplay();
 }
 
 // Read PDF
-window.readBook = (url,sectionId,index)=>{
+function readBook(url,sectionId,index){
   const modal=document.getElementById('readerModal');
   const iframe=document.getElementById('pdfViewer');
-  iframe.src=url;
-  modal.style.display='flex';
-
+  iframe.src=url; modal.style.display='flex';
   const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};
-  map[sectionId][index].views+=1;
-  sortBooks();
-  refreshDisplay();
+  map[sectionId][index].views+=1; sortBooks(); refreshDisplay();
 }
 
 // Close modal
-window.closeReader = ()=>{
-  const modal=document.getElementById('readerModal');
-  document.getElementById('pdfViewer').src='';
-  modal.style.display='none';
-}
+function closeReader(){ const modal=document.getElementById('readerModal'); document.getElementById('pdfViewer').src=''; modal.style.display='none'; }
 
-// Show more
-window.showMore = (sectionId)=>{
-  displayCount[sectionId]+=10;
-  const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};
-  displaySection(sectionId,map[sectionId]);
-}
+// Show more books
+function showMore(sectionId){ displayCount[sectionId]+=10; const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks}; displaySection(sectionId,map[sectionId]); }
 
 // Search books
-window.searchBooks = ()=>{
+function searchBooks(){
   const query=document.getElementById('searchInput').value.toLowerCase();
-  const filter=(books)=>books.filter(book=>book.title.toLowerCase().includes(query));
+  const filter=(books)=>books.filter(b=>b.title.toLowerCase().includes(query));
   displaySection('mostViewed',filter(mostViewedBooks));
   displaySection('topRated',filter(topRatedBooks));
   displaySection('recommended',filter(recommendedBooks));
