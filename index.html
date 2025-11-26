@@ -83,25 +83,26 @@ h2 { margin-bottom:15px; font-size:24px; color:#0d3b66; cursor:pointer; user-sel
 <iframe id="pdfViewer"></iframe>
 </div>
 
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
+<!-- Supabase Module -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
 const SUPABASE_URL = "https://tbtxulhykrgzktgrwqwd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY"; // <- put your key here
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidHh1bGh5a3Jnemt0Z3J3cXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzMyODksImV4cCI6MjA3OTM0OTI4OX0.V9VBuQm6fkA6ujQh5UgHttx7A8YLW0AJVt-sNjdoccY"; // replace with your anon key
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Local arrays
 let mostViewedBooks=[], topRatedBooks=[], recommendedBooks=[], recentBooks=[];
 let displayCount={mostViewed:10,topRated:10,recommended:10,recent:10};
 
 // Toggle upload section
-function toggleUploadSection(){
+window.toggleUploadSection = () => {
   const section=document.getElementById('uploadSection');
   section.style.display = section.style.display==='none'?'block':'none';
 }
 
 // Collapsible sections
-function toggleSection(sectionId){
+window.toggleSection = (sectionId) => {
   const section=document.getElementById(sectionId+'Section');
   const grid=section.querySelector('.book-grid');
   const button=document.getElementById(sectionId+'ShowMore');
@@ -110,28 +111,24 @@ function toggleSection(sectionId){
 }
 
 // Upload book
-async function uploadBook(){
+window.uploadBook = async () => {
   const pdfFile=document.getElementById('ebookFile').files[0];
   const coverFile=document.getElementById('coverFile').files[0];
   const title=document.getElementById('ebookTitle').value.trim();
   if(!pdfFile || !coverFile || !title){ alert("Please select PDF, cover & enter title"); return; }
 
   try {
-    // upload PDF
     const pdfPath = `pdfs/${Date.now()}_${pdfFile.name}`;
     let { error: pdfError } = await supabase.storage.from('ebooks').upload(pdfPath, pdfFile, { upsert:true });
     if(pdfError) throw pdfError;
 
-    // upload cover
     const coverPath = `covers/${Date.now()}_${coverFile.name}`;
     let { error: coverError } = await supabase.storage.from('covers').upload(coverPath, coverFile, { upsert:true });
     if(coverError) throw coverError;
 
-    // get public URLs
     const pdfUrl = supabase.storage.from('ebooks').getPublicUrl(pdfPath).publicUrl;
     const coverUrl = supabase.storage.from('covers').getPublicUrl(coverPath).publicUrl;
 
-    // save to local array
     const book={title,url:pdfUrl,cover:coverUrl,rating:0,views:0};
     recentBooks.unshift(book);
     sortBooks();
@@ -181,7 +178,7 @@ function refreshDisplay(){
 }
 
 // Rate book
-function rateBook(sectionId,index,rating){
+window.rateBook = (sectionId,index,rating)=>{
   const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};
   map[sectionId][index].rating=rating;
   sortBooks();
@@ -189,7 +186,7 @@ function rateBook(sectionId,index,rating){
 }
 
 // Read PDF
-function readBook(url,sectionId,index){
+window.readBook = (url,sectionId,index)=>{
   const modal=document.getElementById('readerModal');
   const iframe=document.getElementById('pdfViewer');
   iframe.src=url;
@@ -202,21 +199,21 @@ function readBook(url,sectionId,index){
 }
 
 // Close modal
-function closeReader(){
+window.closeReader = ()=>{
   const modal=document.getElementById('readerModal');
   document.getElementById('pdfViewer').src='';
   modal.style.display='none';
 }
 
 // Show more
-function showMore(sectionId){
+window.showMore = (sectionId)=>{
   displayCount[sectionId]+=10;
   const map={mostViewed:mostViewedBooks,topRated:topRatedBooks,recommended:recommendedBooks,recent:recentBooks};
   displaySection(sectionId,map[sectionId]);
 }
 
 // Search books
-function searchBooks(){
+window.searchBooks = ()=>{
   const query=document.getElementById('searchInput').value.toLowerCase();
   const filter=(books)=>books.filter(book=>book.title.toLowerCase().includes(query));
   displaySection('mostViewed',filter(mostViewedBooks));
